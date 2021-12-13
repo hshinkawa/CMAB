@@ -1,5 +1,6 @@
 import numpy as np
 import itertools
+import time
 
 
 def ModifiedSoftmax(result):
@@ -40,7 +41,9 @@ def ModifiedSoftmax(result):
         tmp_pref = preference.copy()
         tmp_pref[:, order[0]] = 0
         #* Only applicable to 2 players.
-        p = preference[:, order[0]]/preference.sum(axis=1) * preference[:, order[1]]/tmp_pref.sum(axis=1)
+        first_term = preference[:, order[0]]/preference.sum(axis=1)
+        second_term = preference[:, order[1]]/tmp_pref.sum(axis=1)
+        p = first_term * second_term
         selection_prob[:, order[0]] += p/num_players
         selection_prob[:, order[1]] += p/num_players
     selection_prob /= selection_prob.sum(axis=1).reshape(-1,1)

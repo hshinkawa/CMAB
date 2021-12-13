@@ -3,6 +3,9 @@ import itertools
 import datetime
 import os
 import numpy as np
+import random
+random.seed(41)
+np.random.seed(41)
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed

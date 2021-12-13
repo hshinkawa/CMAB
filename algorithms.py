@@ -15,7 +15,17 @@ def ModifiedSoftmax(result):
     num_players = result.shape[0]
     num_arms = result.shape[1]
     # Experienced average for each player. 1 if each machine has never been pulled.
-    experienced_average = np.divide(result[:,:,0], result[:,:,0]+result[:,:,1], out=np.ones_like(result[:,:,0]), where=(result[:,:,0]+result[:,:,1])!=0)
+    experienced_average = np.zeros((num_players, num_arms))
+    if np.any(result[0,:,0]+result[0,:,1]==0):
+        experienced_average[0] = np.ones(num_arms)
+    else:
+        experienced_average[0] = result[0,:,0]/(result[0,:,0]+result[0,:,1])
+    if np.any(result[1,:,0]+result[1,:,1]==0):
+        experienced_average[1] = np.ones(num_arms)
+    else:
+        experienced_average[1] = result[1,:,0]/(result[1,:,0]+result[1,:,1])
+    #! This part may be wrong.
+    # experienced_average = np.divide(result[:,:,0], result[:,:,0]+result[:,:,1], out=np.ones_like(result[:,:,0]), where=(result[:,:,0]+result[:,:,1])!=0)
     beta_list = np.pi * (result[:,:,0]+result[:,:,1]+2) * np.sqrt((result[:,:,0]+result[:,:,1]+3)/(6*(result[:,:,0]+1)*(result[:,:,1]+1)))
     # Optimal beta for each player.
     beta = beta_list[range(num_players), experienced_average.argsort()[:,::-1][:,num_players]]

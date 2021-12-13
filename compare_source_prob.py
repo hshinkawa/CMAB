@@ -1,5 +1,7 @@
 import argparse
 import itertools
+import datetime
+import os
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -67,6 +69,15 @@ def main(num_trials, num_selections, avoid_aem, num_arms_min, num_arms_max):
         if not avoid_aem:
             ave_aems.append(aem_results.mean())
             std_aems.append(aem_results.std())
+    now = datetime.datetime.now()
+    current_time = now.strftime("%Y-%m-%d-%H-%M-%S")
+    dir_for_output = "data/td_trial/" + current_time
+    os.makedirs(dir_for_output, exist_ok=False)
+    np.save(conv_results, dir_for_output+'/conv_results.npy')
+    np.save(psm_results, dir_for_output+'/psm_results.npy')
+    np.save(ideal_results, dir_for_output+'/ideal_results.npy')
+    if not avoid_aem:
+        np.save(aem_results, dir_for_output+'/aem_results.npy')
     # Draw figures.
     plt.figure(figsize=(8, 6), dpi=80)
     plt.rcParams['font.family'] = 'Times New Roman'

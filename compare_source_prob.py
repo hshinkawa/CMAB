@@ -114,7 +114,7 @@ def main(num_trials, num_selections, avoid_aem, num_arms_min, num_arms_max):
         plt.xticks(x2, label_x)
     else:
         plt.xticks(x2+0.1, label_x)
-    plt.savefig('average_reward.pdf', bbox_inches="tight", pad_inches=0.05)
+    plt.savefig(dir_for_output+'/average_reward.pdf', bbox_inches="tight", pad_inches=0.05)
 
     plt.figure(figsize=(8, 6), dpi=80)
     if avoid_aem:
@@ -141,7 +141,7 @@ def main(num_trials, num_selections, avoid_aem, num_arms_min, num_arms_max):
         plt.xticks(x2, label_x)
     else:
         plt.xticks(x2+0.1, label_x)
-    plt.savefig('std_reward.pdf', bbox_inches="tight", pad_inches=0.05)
+    plt.savefig(dir_for_output+'/std_reward.pdf', bbox_inches="tight", pad_inches=0.05)
 
 
 def boolean_string(s):

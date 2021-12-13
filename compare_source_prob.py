@@ -161,4 +161,4 @@ if __name__ == "__main__":
     parser.add_argument("--num_arms_min", default=3, type=int, help='Minimum number of machines.')
     parser.add_argument("--num_arms_max", default=4, type=int, help='Maximum number of machines.')
     args = parser.parse_args()
-    main(args.num_trials, args.num_selecåtions, args.avoid_aem, args.num_arms_min, args.num_arms_max)
+    main(args.num_trials, args.num_selections, args.avoid_aem, args.num_arms_min, args.num_arms_max)

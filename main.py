@@ -17,7 +17,7 @@ def CMAB(env, num_selections, input_state, method):
     num_arms = len(env)
     selection_probs = np.zeros((num_players, num_arms, num_selections), dtype=np.float)
     selections = np.zeros((num_players, num_selections), dtype=np.int)
-    rewards = np.zeros((num_players, num_selections), dtype=np.int)
+    rewards = np.zeros((num_players, num_selections), dtype=np.float)
     result = np.zeros((num_players, num_arms, 3), dtype=np.float)
     for t in range(num_selections):
         if method == 'psm':

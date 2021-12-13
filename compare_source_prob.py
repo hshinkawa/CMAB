@@ -44,7 +44,7 @@ def main(num_trials, num_selections, avoid_aem, num_arms_min, num_arms_max):
         os.makedirs(dir_for_output+'{}M/ideal/'.format(num_arms))
         if not avoid_aem:
             os.makedirs(dir_for_output+'{}M/aem/'.format(num_arms))
-        env = np.array([0.1]*(num_arms-4) + [0.3, 0.5, 0.7, 0.9])[:num_arms] # Reward envirionment
+        env = np.array([0.9, 0.7, 0.5, 0.3] + [0.1]*(num_arms-4))[:num_arms] # Reward envirionment
         envs = list(set(itertools.permutations(env))) # All environments.
         conv_results = np.zeros(len(envs))
         psm_results = np.zeros(len(envs))

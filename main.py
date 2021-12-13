@@ -5,22 +5,23 @@ from algorithms import ModifiedSoftmax
 from joint_selection import joint_matrix, random_order
 
 
-env = np.array([0.9, 0.5, 0.1]) # Reward envirionment
-num_selections = 1000 # Number of selection in a CMAB trial
-num_trials = 100 # Number of CMAB trials
-num_players = 2 # Number of players
-num_arms = len(env) # Number of machines.
-input_state = np.array([0, 1/6, 1/6, 1/6, 0, 1/6, 1/6, 1/6, 0])
-equality = True
-rotation = True
+num_players = 2
+rng = np.random.default_rng()
 
+def generate_input(num_arms, method='psm'):
+    permute = rng.permutation(num_arms)
+    input_state = np.power(np.sin(np.pi/num_arms * (permute.reshape(-1,1) - permute)),2) / num_arms**2
+    return input_state
 
-def CMAB(env, num_selections, equality, input_state, rotation):
+def CMAB(env, num_selections, input_state, method):
+    num_arms = len(env)
     selection_probs = np.zeros((num_players, num_arms, num_selections), dtype=np.float)
     selections = np.zeros((num_players, num_selections), dtype=np.int)
     rewards = np.zeros((num_players, num_selections), dtype=np.int)
     result = np.zeros((num_players, num_arms, 3), dtype=np.float)
     for t in range(num_selections):
+        if method == 'psm':
+            input_state = generate_input(num_arms, method='psm')
         # Machine selections.
         selection_prob = ModifiedSoftmax(result)
         selection = joint_matrix(input_state, selection_prob)
@@ -48,7 +49,8 @@ def CMAB(env, num_selections, equality, input_state, rotation):
     return rewards.sum(axis=1)
 
 
-def detail():
+def detail(num_trials, env, num_selections, equality, input_state, rotation):
+    num_arms = len(env)
     selection_probs_history = np.zeros((num_players, num_arms, num_selections, num_trials))
     selection_history = np.zeros((num_players, num_selections, num_trials))
     reward_history = np.zeros((num_players, num_selections, num_trials))
@@ -63,7 +65,7 @@ def detail():
     return average_reward
 
 
-def main():
+def main(num_trials, env, num_selections, equality, input_state, rotation):
     print(np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, equality, input_state, rotation) for _ in range(num_trials)])).mean(axis=0))
 
 

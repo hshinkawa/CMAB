@@ -3,18 +3,17 @@ from tqdm import tqdm
 from joblib import Parallel, delayed
 from algorithms import ModifiedSoftmax
 from joint_selection import joint_matrix, random_order
-
-
 num_players = 2
-rng = np.random.default_rng()
 
-def generate_input(num_arms, method='psm'):
+
+def generate_input(num_arms, rng, method='psm'):
     permute = rng.permutation(num_arms)
     input_state = np.power(np.sin(np.pi/num_arms * (permute.reshape(-1,1) - permute)),2) / num_arms**2
     return input_state
 
 def CMAB(env, num_selections, input_state, method, seed):
     np.random.seed(seed)
+    rng = np.random.default_rng()
     num_arms = len(env)
     selection_probs = np.zeros((num_players, num_arms, num_selections), dtype=np.float)
     selections = np.zeros((num_players, num_selections), dtype=np.int)
@@ -22,7 +21,7 @@ def CMAB(env, num_selections, input_state, method, seed):
     result = np.zeros((num_players, num_arms, 3), dtype=np.float)
     for t in range(num_selections):
         if method == 'psm':
-            input_state = generate_input(num_arms, method='psm')
+            input_state = generate_input(num_arms, rng, method='psm')
         # Machine selections.
         selection_prob = ModifiedSoftmax(result)
         selection = joint_matrix(input_state, selection_prob)

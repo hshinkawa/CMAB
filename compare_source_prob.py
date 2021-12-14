@@ -3,8 +3,6 @@ import itertools
 import datetime
 import os
 import numpy as np
-import random
-random.seed(41)
 np.random.seed(41)
 from tqdm import tqdm
 import matplotlib.pyplot as plt
@@ -38,6 +36,11 @@ def main(num_trials, num_selections, avoid_aem, num_arms_min, num_arms_max):
     now = datetime.datetime.now()
     current_time = now.strftime("%Y-%m-%d-%H-%M-%S")
     dir_for_output = "data/" + current_time + "/"
+    seed_sequence_conv = np.random.randint(1e8, size=num_trials)
+    seed_sequence_psm = np.random.randint(1e8, size=num_trials)
+    seed_sequence_ideal = np.random.randint(1e8, size=num_trials)
+    if not avoid_aem:
+        seed_sequence_aem = np.random.randint(1e8, size=num_trials)
     for num_arms in range(num_arms_min, num_arms_max+1): # Number of machines = 3,4,5.
         os.makedirs(dir_for_output+'{}M/conv/'.format(num_arms))
         os.makedirs(dir_for_output+'{}M/psm/'.format(num_arms))
@@ -56,23 +59,23 @@ def main(num_trials, num_selections, avoid_aem, num_arms_min, num_arms_max):
             method = 'conv'
             input_state = generate_input(num_arms, method)
             # Average reward for this env.
-            conv_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method) for _ in range(num_trials)])).mean(axis=0)
+            conv_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_conv[tr]) for tr in range(num_trials)])).mean(axis=0)
             np.save(dir_for_output+'{}M/conv/reward_env_{}.npy'.format(num_arms, i), conv_result)
             conv_results[i] = conv_result.mean()
             method = 'psm'
             input_state = generate_input(num_arms, method)
-            psm_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method) for _ in range(num_trials)])).mean(axis=0)
+            psm_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_psm[tr]) for tr in range(num_trials)])).mean(axis=0)
             np.save(dir_for_output+'{}M/psm/reward_env_{}.npy'.format(num_arms, i), psm_result)
             psm_results[i] = psm_result.mean()
             method = 'ideal'
             input_state = generate_input(num_arms, method)
-            ideal_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method) for _ in range(num_trials)])).mean(axis=0)
+            ideal_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_ideal[tr]) for tr in range(num_trials)])).mean(axis=0)
             np.save(dir_for_output+'{}M/ideal/reward_env_{}.npy'.format(num_arms, i), ideal_result)
             ideal_results[i] = ideal_result.mean()
             if not avoid_aem:
                 method = 'aem'
                 input_state = generate_input(num_arms, method)
-                aem_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method) for _ in range(num_trials)])).mean(axis=0)
+                aem_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_aem[tr]) for tr in range(num_trials)])).mean(axis=0)
                 np.save(dir_for_output+'{}M/aem/reward_env_{}.npy'.format(num_arms, i), aem_result)
                 aem_results[i] = aem_result.mean()
         ave_convs.append(conv_results.mean())

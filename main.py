@@ -13,7 +13,8 @@ def generate_input(num_arms, method='psm'):
     input_state = np.power(np.sin(np.pi/num_arms * (permute.reshape(-1,1) - permute)),2) / num_arms**2
     return input_state
 
-def CMAB(env, num_selections, input_state, method):
+def CMAB(env, num_selections, input_state, method, seed):
+    np.random.seed(seed)
     num_arms = len(env)
     selection_probs = np.zeros((num_players, num_arms, num_selections), dtype=np.float)
     selections = np.zeros((num_players, num_selections), dtype=np.int)

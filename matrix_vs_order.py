@@ -31,30 +31,32 @@ def main(num_trials, num_selections, avoid_aem, num_arms_min, num_arms_max):
     now = datetime.datetime.now()
     current_time = now.strftime("%Y-%m-%d-%H-%M-%S")
     dir_for_output = "data/" + current_time + "-matrix_vs_order/"
-    seed_sequence_ideal = np.random.randint(np.iinfo(np.int32).max, size=num_trials)
     for num_arms in range(num_arms_min, num_arms_max+1): # Number of machines = 3,4,5.
         os.makedirs(dir_for_output+'{}M/matrix/'.format(num_arms))
         os.makedirs(dir_for_output+'{}M/order/'.format(num_arms))
         env = np.array([0.9, 0.7, 0.5, 0.3] + [0.1]*(num_arms-4))[:num_arms] # Reward envirionment
         envs = list(set(itertools.permutations(env))) # All environments.
-        ideal_results_matrix = np.zeros(len(envs))
-        ideal_results_order = np.zeros(len(envs))
+        matrix_results = np.zeros(len(envs))
+        order_results = np.zeros(len(envs))
+        num_envs = len(envs)
+        seed_sequence_matrix = np.random.randint(np.iinfo(np.int32).max, size=num_trials*num_envs)
+        seed_sequence_order = np.random.randint(np.iinfo(np.int32).max, size=num_trials*num_envs)
         for i, env in enumerate(tqdm(envs)):
             env = np.array(env)
             method = 'ideal'
             input_state = generate_input(num_arms, method)
             joint_selection = 'matrix'
-            matrix_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_ideal[tr], joint_selection=joint_selection) for tr in range(num_trials)])).mean(axis=0)
+            matrix_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_matrix[i*num_trials+tr], joint_selection=joint_selection) for tr in range(num_trials)])).mean(axis=0)
             np.save(dir_for_output+'{}M/matrix/reward_env_{}.npy'.format(num_arms, i), matrix_result)
-            ideal_results_matrix[i] = matrix_result.mean()
+            matrix_results[i] = matrix_result.mean()
             joint_selection = 'order'
-            order_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_ideal[tr], joint_selection=joint_selection) for tr in range(num_trials)])).mean(axis=0)
+            order_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_order[i*num_trials+tr], joint_selection=joint_selection) for tr in range(num_trials)])).mean(axis=0)
             np.save(dir_for_output+'{}M/order/reward_env_{}.npy'.format(num_arms, i), order_result)
-            ideal_results_order[i] = order_result.mean()
-        ave_matrix.append(ideal_results_matrix.mean())
-        std_matrix.append(ideal_results_matrix.std())
-        ave_order.append(ideal_results_order.mean())
-        std_order.append(ideal_results_order.std())
+            order_results[i] = order_result.mean()
+        ave_matrix.append(matrix_results.mean())
+        std_matrix.append(matrix_results.std())
+        ave_order.append(order_results.mean())
+        std_order.append(order_results.std())
     # Draw figures.
     plt.figure(figsize=(8, 6), dpi=80)
     plt.rcParams['font.family'] = 'Times New Roman'

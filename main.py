@@ -12,8 +12,7 @@ def generate_input(num_arms, rng, method='psm'):
     return input_state
 
 def CMAB(env, num_selections, input_state, method, seed, joint_selection='matrix'):
-    np.random.seed(seed)
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(seed)
     num_arms = len(env)
     selection_probs = np.zeros((num_players, num_arms, num_selections), dtype=np.float)
     selections = np.zeros((num_players, num_selections), dtype=np.int)
@@ -25,7 +24,7 @@ def CMAB(env, num_selections, input_state, method, seed, joint_selection='matrix
         # Machine selections.
         selection_prob = ModifiedSoftmax(result)
         if joint_selection == 'matrix':
-            selection = joint_matrix(input_state, selection_prob)
+            selection = joint_matrix(input_state, selection_prob, rng=rng)
         elif joint_selection == 'order':
             selection = random_order(input_state, selection_prob, rng=rng)
         selection_probs[:,:,t] = selection_prob
@@ -34,7 +33,7 @@ def CMAB(env, num_selections, input_state, method, seed, joint_selection='matrix
         # Reward results.
         #* Only applicable to 2 players.
         #"""
-        wl = np.random.rand(num_players) < env[selection]
+        wl = rng.random(num_players) < env[selection]
         if (selection[0] == selection[1]) & wl[0] & wl[1]: # When the players select the same machine and they both hit.
             result[:, selection[0], 0] += 1
             result[:, selection[0], 2] += 0.5

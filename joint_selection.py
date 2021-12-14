@@ -3,7 +3,7 @@ import itertools
 import copy
 
 
-def joint_matrix(input_state, selection_prob):
+def joint_matrix(input_state, selection_prob, rng=None):
     """
     Input:
         input_state: generation probabilities at the source.
@@ -13,13 +13,15 @@ def joint_matrix(input_state, selection_prob):
     """
     num_players = selection_prob.shape[0]
     num_arms = selection_prob.shape[1]
+    if rng is None:
+        rng = np.random.default_rng()
     selections = list(itertools.product(range(num_arms), repeat=num_players))
     selection_matrix = selection_prob[range(num_players),selections].prod(1)
     selection_matrix = selection_matrix.reshape(num_arms, num_arms)
     selection_matrix /= selection_matrix.sum()
     joint_matrix = selection_matrix * input_state
     joint_matrix = (joint_matrix/joint_matrix.sum()).reshape(-1,)
-    return np.array(selections[np.random.choice(len(joint_matrix), p=joint_matrix)], dtype=np.int)
+    return np.array(selections[rng.choice(len(joint_matrix), p=joint_matrix)], dtype=np.int)
 
 
 def random_order(input_state, selection_prob, rng=None):
@@ -31,7 +33,7 @@ def random_order(input_state, selection_prob, rng=None):
     players_order = rng.permutation(num_players)
     tmp_probs = copy.deepcopy(selection_prob)
     for player in players_order:
-        selection = np.random.choice(num_arms, p=tmp_probs[player])
+        selection = rng.choice(num_arms, p=tmp_probs[player])
         selections[player] = selection
         tmp_probs[:, selection] = 0
         tmp_probs /= tmp_probs.sum(1).reshape(-1,1)

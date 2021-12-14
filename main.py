@@ -11,7 +11,7 @@ def generate_input(num_arms, rng, method='psm'):
     input_state = np.power(np.sin(np.pi/num_arms * (permute.reshape(-1,1) - permute)),2) / num_arms**2
     return input_state
 
-def CMAB(env, num_selections, input_state, method, seed):
+def CMAB(env, num_selections, input_state, method, seed, joint_selection='matrix'):
     np.random.seed(seed)
     rng = np.random.default_rng()
     num_arms = len(env)
@@ -24,8 +24,10 @@ def CMAB(env, num_selections, input_state, method, seed):
             input_state = generate_input(num_arms, rng, method='psm')
         # Machine selections.
         selection_prob = ModifiedSoftmax(result)
-        selection = joint_matrix(input_state, selection_prob)
-        # selection = random_order(input_state, selection_prob)
+        if joint_selection == 'matrix':
+            selection = joint_matrix(input_state, selection_prob)
+        elif joint_selection == 'order':
+            selection = random_order(input_state, selection_prob, rng=rng)
         selection_probs[:,:,t] = selection_prob
         selections[:,t] = selection
 

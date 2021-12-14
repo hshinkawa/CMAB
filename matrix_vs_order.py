@@ -7,9 +7,28 @@ np.random.seed(41)
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
+import contextlib
+import joblib
 from algorithms import ModifiedSoftmax
 from joint_selection import joint_matrix, random_order
 from main import CMAB
+
+
+@contextlib.contextmanager
+def tqdm_joblib(tqdm_object):
+    """Context manager to patch joblib to report into tqdm progress bar given as argument"""
+    class TqdmBatchCompletionCallback(joblib.parallel.BatchCompletionCallBack):
+        def __call__(self, *args, **kwargs):
+            tqdm_object.update(n=self.batch_size)
+            return super().__call__(*args, **kwargs)
+
+    old_batch_callback = joblib.parallel.BatchCompletionCallBack
+    joblib.parallel.BatchCompletionCallBack = TqdmBatchCompletionCallback
+    try:
+        yield tqdm_object
+    finally:
+        joblib.parallel.BatchCompletionCallBack = old_batch_callback
+        tqdm_object.close()
 
 
 def generate_input(num_arms, method='conv'):
@@ -36,10 +55,14 @@ def main(num_trials, num_selections, num_arms_min, num_arms_max):
         method = 'ideal'
         input_state = generate_input(num_arms, method)
         joint_selection = 'matrix'
-        matrix_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_matrix[tr], joint_selection=joint_selection) for tr in range(num_trials)]))
+        # matrix_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_matrix[tr], joint_selection=joint_selection) for tr in range(num_trials)]))
+        with tqdm_joblib(tqdm(desc="Matrix", total=num_trials)) as progress_bar:
+            matrix_result = np.array([Parallel(n_jobs=-1)(delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_matrix[tr], joint_selection=joint_selection) for tr in range(num_trials))])
         np.save(dir_for_output+'{}M/matrix/reward.npy'.format(num_arms), matrix_result)
         joint_selection = 'order'
-        order_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_order[tr], joint_selection=joint_selection) for tr in range(num_trials)])).mean(axis=0)
+        # order_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_order[tr], joint_selection=joint_selection) for tr in range(num_trials)])).mean(axis=0)
+        with tqdm_joblib(tqdm(desc="Random order", total=num_trials)) as progress_bar:
+            order_result = np.array([Parallel(n_jobs=-1)(delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_order[tr], joint_selection=joint_selection) for tr in range(num_trials))])
         np.save(dir_for_output+'{}M/order/reward.npy'.format(num_arms), order_result)
 
 
@@ -56,4 +79,4 @@ if __name__ == "__main__":
     parser.add_argument("--num_arms_min", default=3, type=int, help='Minimum number of machines.')
     parser.add_argument("--num_arms_max", default=4, type=int, help='Maximum number of machines.')
     args = parser.parse_args()
-    main(args.num_trials, args.num_selections, args.avoid_aem, args.num_arms_min, args.num_arms_max)
+    main(args.num_trials, args.num_selections, args.num_arms_min, args.num_arms_max)

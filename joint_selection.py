@@ -22,12 +22,13 @@ def joint_matrix(input_state, selection_prob):
     return np.array(selections[np.random.choice(len(joint_matrix), p=joint_matrix)], dtype=np.int)
 
 
-def random_order(input_state, selection_prob):
+def random_order(input_state, selection_prob, rng=None):
     num_players = selection_prob.shape[0]
     num_arms = selection_prob.shape[1]
-    generator = np.random.default_rng()
+    if rng is None:
+        rng = np.random.default_rng()
     selections = np.array([-1] * num_players, dtype=np.int)
-    players_order = generator.permutation(num_players)
+    players_order = rng.permutation(num_players)
     tmp_probs = copy.deepcopy(selection_prob)
     for player in players_order:
         selection = np.random.choice(num_arms, p=tmp_probs[player])

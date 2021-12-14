@@ -35,7 +35,7 @@ def main(num_trials, num_selections, avoid_aem, num_arms_min, num_arms_max):
         std_aems = []
     now = datetime.datetime.now()
     current_time = now.strftime("%Y-%m-%d-%H-%M-%S")
-    dir_for_output = "data/" + current_time + "/"
+    dir_for_output = "data/" + current_time + "-compare_source_prob/"
     seed_sequence_conv = np.random.randint(np.iinfo(np.int32).max, size=num_trials)
     seed_sequence_psm = np.random.randint(np.iinfo(np.int32).max, size=num_trials)
     seed_sequence_ideal = np.random.randint(np.iinfo(np.int32).max, size=num_trials)

@@ -36,11 +36,11 @@ def main(num_trials, num_selections, avoid_aem, num_arms_min, num_arms_max):
     now = datetime.datetime.now()
     current_time = now.strftime("%Y-%m-%d-%H-%M-%S")
     dir_for_output = "data/" + current_time + "/"
-    seed_sequence_conv = np.random.randint(1e8, size=num_trials)
-    seed_sequence_psm = np.random.randint(1e8, size=num_trials)
-    seed_sequence_ideal = np.random.randint(1e8, size=num_trials)
+    seed_sequence_conv = np.random.randint(np.iinfo(np.int32).max, size=num_trials)
+    seed_sequence_psm = np.random.randint(np.iinfo(np.int32).max, size=num_trials)
+    seed_sequence_ideal = np.random.randint(np.iinfo(np.int32).max, size=num_trials)
     if not avoid_aem:
-        seed_sequence_aem = np.random.randint(1e8, size=num_trials)
+        seed_sequence_aem = np.random.randint(np.iinfo(np.int32).max, size=num_trials)
     for num_arms in range(num_arms_min, num_arms_max+1): # Number of machines = 3,4,5.
         os.makedirs(dir_for_output+'{}M/conv/'.format(num_arms))
         os.makedirs(dir_for_output+'{}M/psm/'.format(num_arms))

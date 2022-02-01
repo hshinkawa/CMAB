@@ -65,8 +65,11 @@ def fill_in(min_a, probs_b, used_arm, used_amount):
 def construct_matrix(ori_probs, joint_matrix, remaining_arms):
     probs = ori_probs[:, remaining_arms]
     n = probs.shape[1]
-    min_arm = probs.sum(0).argmin()
-    max_arm = probs.sum(0).argmax()
+    arm_sum = probs.sum(0)
+    min_arm = np.random.choice(np.where(arm_sum==arm_sum.min())[0])
+    max_arm = np.where(arm_sum==arm_sum.max())[0]
+    max_arm = max_arm[max_arm!=min_arm]
+    max_arm = np.random.choice(max_arm)
     mv = probs[:,max_arm].sum()
     if mv>1:
         delta = (mv-1)/(2*(n-1))

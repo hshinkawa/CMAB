@@ -49,21 +49,25 @@ def main(num_trials, num_selections, num_arms_min, num_arms_max):
     for num_arms in range(num_arms_min, num_arms_max+1): # Number of machines = 3,4,5.
         os.makedirs(dir_for_output+'{}M/matrix/'.format(num_arms))
         os.makedirs(dir_for_output+'{}M/order/'.format(num_arms))
+        os.makedirs(dir_for_output+'{}M/fair/'.format(num_arms))
         env = np.array([0.9, 0.7, 0.5, 0.3] + [0.1]*(num_arms-4))[:num_arms] # Reward envirionment
         seed_sequence_matrix = np.random.randint(np.iinfo(np.int32).max, size=num_trials)
         seed_sequence_order = np.random.randint(np.iinfo(np.int32).max, size=num_trials)
+        seed_sequence_fair = np.random.randint(np.iinfo(np.int32).max, size=num_trials)
         method = 'ideal'
         input_state = generate_input(num_arms, method)
         joint_selection = 'matrix'
-        # matrix_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_matrix[tr], joint_selection=joint_selection) for tr in range(num_trials)]))
         with tqdm_joblib(tqdm(desc="Matrix", total=num_trials)) as progress_bar:
             matrix_result = np.array([Parallel(n_jobs=-1)(delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_matrix[tr], joint_selection=joint_selection) for tr in range(num_trials))])
         np.save(dir_for_output+'{}M/matrix/reward.npy'.format(num_arms), matrix_result)
         joint_selection = 'order'
-        # order_result = np.array(Parallel(n_jobs=-1)([delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_order[tr], joint_selection=joint_selection) for tr in range(num_trials)])).mean(axis=0)
         with tqdm_joblib(tqdm(desc="Random order", total=num_trials)) as progress_bar:
             order_result = np.array([Parallel(n_jobs=-1)(delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_order[tr], joint_selection=joint_selection) for tr in range(num_trials))])
         np.save(dir_for_output+'{}M/order/reward.npy'.format(num_arms), order_result)
+        joint_selection = 'fair_matrix'
+        with tqdm_joblib(tqdm(desc="Fair matrix", total=num_trials)) as progress_bar:
+            order_result = np.array([Parallel(n_jobs=-1)(delayed(CMAB)(env, num_selections, input_state, method, seed_sequence_fair[tr], joint_selection=joint_selection) for tr in range(num_trials))])
+        np.save(dir_for_output+'{}M/fair/reward.npy'.format(num_arms), order_result)
 
 
 def boolean_string(s):

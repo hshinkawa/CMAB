@@ -2,7 +2,7 @@ import numpy as np
 from tqdm import tqdm
 from joblib import Parallel, delayed
 from algorithms import ModifiedSoftmax
-from joint_selection import joint_matrix, random_order
+from joint_selection import joint_matrix, random_order, fair_matrix
 num_players = 2
 
 
@@ -27,6 +27,8 @@ def CMAB(env, num_selections, input_state, method, seed, joint_selection='matrix
             selection = joint_matrix(input_state, selection_prob, rng=rng)
         elif joint_selection == 'order':
             selection = random_order(input_state, selection_prob, rng=rng)
+        elif joint_selection == 'fair_matrix':
+            selection = fair_matrix(input_state, selection_prob, rng=rng)
         selection_probs[:,:,t] = selection_prob
         selections[:,t] = selection
 
